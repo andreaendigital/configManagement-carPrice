@@ -1,0 +1,4 @@
+app_repo: https://github.com/andreaendigital/CarPricePredictor-Demo.git
+app_dest: /home/ec2-user/CarPricePredictor-Demo
+app_branch: main
+log_file: /var/log/carprice.log

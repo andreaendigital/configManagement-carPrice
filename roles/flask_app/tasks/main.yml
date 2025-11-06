@@ -1,0 +1,60 @@
+- name: Update system packages
+  apt:
+    update_cache: yes
+  become: true
+
+- name: Install required system dependencies
+  apt:
+    name:
+      - python3
+      - python3-pip
+      - python3-venv
+      - git
+      - make
+    state: present
+  become: true
+
+- name: Clone the Flask application repository
+  git:
+    repo: "{{ app_repo }}"
+    dest: "{{ app_dest }}"
+    version: "{{ app_branch }}"
+  become: true
+
+- name: Create Python virtual environment
+  command: python3 -m venv venv
+  args:
+    chdir: "{{ app_dest }}"
+  become: true
+
+- name: Install Python dependencies with pip
+  shell: |
+    source venv/bin/activate
+    pip install -e .[dev] --break-system-packages || pip install -e .[dev]
+  args:
+    chdir: "{{ app_dest }}"
+  become: true
+
+- name: Deploy systemd service for Flask app
+  template:
+    src: app.service.j2
+    dest: /etc/systemd/system/carprice.service
+  become: true
+
+- name: Enable and start Flask app service
+  systemd:
+    name: carprice
+    enabled: true
+    state: started
+  become: true
+
+  
+
+- name: Set environment variables and start the Flask app
+  shell: |
+    export SKIP_TESTS=1
+    export FLASK_HOST=0.0.0.0
+    export HOST=0.0.0.0
+    nohup make dev-python > /var/log/carprice.log 2>&1 &
+  args:
+    chdir: /home/ec2-user/CarPricePredictor-Demo
