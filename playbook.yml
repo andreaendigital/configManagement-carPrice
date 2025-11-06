@@ -2,8 +2,5 @@
   hosts: infraCar
   become: true
 
-  vars_files:
-    - group_vars/all.yml
-
   roles:
     - flask_app
