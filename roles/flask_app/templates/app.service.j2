@@ -14,6 +14,8 @@ WorkingDirectory={{ app_dest }}
 # Command to start the app using the virtual environment
 ExecStart={{ app_dest }}/venv/bin/python {{ app_dest }}/app.py
 
+#ExecStart=/usr/bin/make dev-python
+
 # Restart policy if the app crashes
 Restart=always
 
