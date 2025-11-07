@@ -49,12 +49,3 @@
   become: true
 
   
-
-- name: Set environment variables and start the Flask app
-  shell: |
-    export SKIP_TESTS=1
-    export FLASK_HOST=0.0.0.0
-    export HOST=0.0.0.0
-    nohup make dev-python > /var/log/carprice.log 2>&1 &
-  args:
-    chdir: /home/ec2-user/CarPricePredictor-Demo
