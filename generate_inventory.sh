@@ -6,7 +6,7 @@ cd infra || exit 1
 terraform init -reconfigure -backend=true
 
 # Ejecuta terraform output para obtener la IP pública
-EC2_IP=$(terraform output -raw ec2_public_ip)
+EC2_IP=$(terraform output -raw module.ec2.ec2_public_ip)
 
 # Verifica que se obtuvo una IP válida
 if [[ -z "$EC2_IP" ]]; then
