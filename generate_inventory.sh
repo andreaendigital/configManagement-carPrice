@@ -16,7 +16,7 @@ fi
 cd ..
 
 # Genera el archivo inventory.ini para Ansible
-cat <<EOF > ansible/inventory.ini
+cat <<EOF > configManagement-carPrice/inventory.ini
 [infraCar]
 ec2-flask ansible_host=$EC2_IP ansible_user=ec2-user ansible_ssh_private_key_file=~/.ssh/demoCar-jenkins_key.pem
 EOF
