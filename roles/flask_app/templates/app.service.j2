@@ -12,7 +12,7 @@ User=ec2-user
 WorkingDirectory={{ app_dest }}
 
 # Command to start the app using the virtual environment
-ExecStart={{ app_dest }}/venv/bin/python -m flask --app {{ app_dest }}/app.py run --host=0.0.0.0 --port=5000
+ExecStart=/usr/bin/make -C {{ app_dest }} dev-python
 
 # Restart policy if the app crashes
 Restart=always
