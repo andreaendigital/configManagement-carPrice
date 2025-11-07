@@ -1,0 +1,12 @@
+#!/bin/bash
+# Production startup script for systemd service
+
+cd {{ app_dest }}
+
+# Install dependencies silently
+pip install -e ".[backend]" --quiet
+pip install -e ".[frontend]" --quiet
+
+# Start backend API (port 5002)
+cd backend
+exec python3 app.py

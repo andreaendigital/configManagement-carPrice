@@ -38,16 +38,17 @@
     chdir: "{{ app_dest }}"
   become: true
 
-- name: Deploy systemd service for Backend Flask app
+- name: Deploy production startup script
+  template:
+    src: start-production.sh.j2
+    dest: {{ app_dest }}/start-production.sh
+    mode: '0755'
+  become: true
+
+- name: Deploy systemd service for Flask app
   template:
     src: app.service.j2
     dest: /etc/systemd/system/carprice.service
-  become: true
-
-- name: Deploy systemd service for Frontend Flask app
-  template:
-    src: frontend.service.j2
-    dest: /etc/systemd/system/carprice-frontend.service
   become: true
 
 - name: Reload systemd daemon
@@ -55,16 +56,9 @@
     daemon_reload: true
   become: true
 
-- name: Enable and start Backend Flask app service
+- name: Enable and start Flask app service
   systemd:
     name: carprice
-    enabled: true
-    state: restarted
-  become: true
-
-- name: Enable and start Frontend Flask app service
-  systemd:
-    name: carprice-frontend
     enabled: true
     state: restarted
   become: true

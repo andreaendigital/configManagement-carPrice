@@ -12,7 +12,7 @@ User=ec2-user
 WorkingDirectory={{ app_dest }}
 
 # Command to start the app using the virtual environment
-ExecStart={{ app_dest }}/venv/bin/python {{ app_dest }}/backend/app.py
+ExecStart={{ app_dest }}/start-production.sh
 
 # Restart policy if the app crashes
 Restart=always
