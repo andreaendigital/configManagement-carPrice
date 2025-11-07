@@ -5,22 +5,22 @@ cd infra || exit 1
 
 terraform init -reconfigure -backend=true
 
-# Ejecuta terraform output para obtener la IP pública
+# Run terraform output to get the public IP address
 EC2_IP=$(terraform output -raw ec2_public_ip)
 
-# Verifica que se obtuvo una IP válida
+# Verify that a valid IP address was obtained
 if [[ -z "$EC2_IP" ]]; then
-  echo "No se pudo obtener la IP pública del EC2"
+  echo "Could not obtain the public IP address of the EC2"
   exit 1
 fi
 
-# Regresa a la raíz del proyecto
+# Return to the project's roots
 cd ..
 
-# Genera el archivo inventory.ini para Ansible
+# Generate the inventory.ini file for Ansible
 cat <<EOF > configManagement-carPrice/inventory.ini
 [infraCar]
-ec2-flask ansible_host=$EC2_IP ansible_user=ec2-user ansible_ssh_private_key_file=~/.ssh/demoCar-jenkins_key.pem
+ec2-flask ansible_host=$EC2_IP ansible_user=ec2-user 
 EOF
 
-echo "Archivo inventory.ini generado con IP: $EC2_IP"
+echo "inventory.ini file generated with IP: $EC2_IP"
