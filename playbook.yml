@@ -1,6 +1,15 @@
-- name: Deploy Flask App to EC2
-  hosts: infraCar
-  become: true
-
-  roles:
-    - flask_app
+- name: Create Flask startup script
+  copy:
+    content: |
+      #!/bin/bash
+      export FLASK_APP=app.py
+      export FLASK_ENV=production
+      export FLASK_RUN_HOST=0.0.0.0
+      export FLASK_RUN_PORT=5000
+      cd /home/ec2-user/car-price-prediction
+      source venv/bin/activate
+      python3 app.py
+    dest: /home/ec2-user/car-price-prediction/start-app.sh
+    mode: '0755'
+    owner: ec2-user
+    group: ec2-user
