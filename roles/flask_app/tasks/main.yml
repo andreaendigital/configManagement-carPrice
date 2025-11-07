@@ -1,16 +1,19 @@
-- name: Update system packages
-  apt:
+- name: Update system packages (Using YUM for Amazon Linux/RHEL)
+  ansible.builtin.yum:  # CAMBIO: Usamos yum en lugar de apt
+    name: '*'
+    state: latest
     update_cache: yes
   become: true
 
-- name: Install required system dependencies
-  apt:
+- name: Install required system dependencies (Using YUM for Amazon Linux/RHEL)
+  ansible.builtin.yum: # CAMBIO: Usamos yum en lugar de apt
     name:
       - python3
       - python3-pip
-      - python3-venv
       - git
       - make
+      # Nota: python3-venv no es siempre un paquete separado en RHEL/Amazon Linux; 
+      # a menudo se incluye con python3 o se usa 'python3 -m venv'.
     state: present
   become: true
 
