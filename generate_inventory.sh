@@ -3,6 +3,8 @@
 # Navega a la carpeta de Terraform
 cd infra || exit 1
 
+terraform init -reconfigure -backend=true
+
 # Ejecuta terraform output para obtener la IP pública
 EC2_IP=$(terraform output -raw ec2_public_ip)
 
