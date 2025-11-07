@@ -43,12 +43,18 @@
     src: app.service.j2
     dest: /etc/systemd/system/carprice.service
   become: true
+  notify: reload systemd
+
+- name: Reload systemd daemon
+  systemd:
+    daemon_reload: true
+  become: true
 
 - name: Enable and start Flask app service
   systemd:
     name: carprice
     enabled: true
-    state: started
+    state: restarted
   become: true
 
   
