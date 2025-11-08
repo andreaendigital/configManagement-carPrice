@@ -4,11 +4,11 @@
 [![AWS](https://img.shields.io/badge/AWS-EC2-orange.svg)](https://aws.amazon.com/ec2/)
 [![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://www.python.org/)
 
-Enterprise-grade Ansible automation for deploying Flask-based car price prediction microservice to AWS EC2 infrastructure.
+Enterprise-grade Ansible automation for deploying full-stack Flask car price prediction application with backend ML API and frontend web interface to AWS EC2 infrastructure.
 
 ## Overview
 
-This repository contains Infrastructure as Code (IaC) automation using Ansible to deploy and manage a Flask application on Amazon EC2 instances. The solution provides automated configuration management, service orchestration, and deployment pipeline integration.
+This repository contains Infrastructure as Code (IaC) automation using Ansible to deploy and manage a full-stack Flask application on Amazon EC2 instances. The solution deploys both backend ML API and frontend web services with automated configuration management, service orchestration, and CI/CD pipeline integration.
 
 ## Prerequisites
 
@@ -34,13 +34,16 @@ export AWS_DEFAULT_REGION="us-east-1"
 
 ```
 configManagement-carPrice/
-├── roles/flask_app/          # Ansible role for Flask app deployment
-│   ├── defaults/main.yml     # Default variables
-│   ├── tasks/main.yml        # Deployment tasks
-│   └── templates/app.service.j2  # Systemd service template
-├── generate_inventory.sh     # Dynamic inventory generator
-├── inventory.ini            # Ansible inventory file
-└── playbook.yml            # Main Ansible playbook
+├── roles/flask_app/              # Ansible role for Flask app deployment
+│   ├── defaults/main.yml         # Default variables
+│   ├── tasks/main.yml            # Deployment tasks
+│   └── templates/
+│       ├── app.service.j2        # Backend ML API service
+│       ├── frontend.service.j2   # Frontend web service
+│       └── start-production.sh.j2 # Production startup script
+├── generate_inventory.sh         # Dynamic inventory generator
+├── inventory.ini                # Ansible inventory file
+└── playbook.yml                # Main Ansible playbook
 ```
 
 ## Quick Start
@@ -70,11 +73,15 @@ ansible-playbook -i inventory.ini playbook.yml
 
 ### 4. Verify Deployment
 ```bash
-# Service status
+# Backend service status
 ssh ec2-user@$(terraform -chdir=../infra output -raw ec2_public_ip) 'systemctl status carprice'
 
-# Application health check
-curl http://$(terraform -chdir=../infra output -raw ec2_public_ip):5000/health
+# Frontend service status
+ssh ec2-user@$(terraform -chdir=../infra output -raw ec2_public_ip) 'systemctl status carprice-frontend'
+
+# Application endpoints
+echo "Backend API: http://$(terraform -chdir=../infra output -raw ec2_public_ip):5002"
+echo "Frontend Web: http://$(terraform -chdir=../infra output -raw ec2_public_ip):3000"
 ```
 
 ## Configuration
@@ -90,16 +97,26 @@ curl http://$(terraform -chdir=../infra output -raw ec2_public_ip):5000/health
 
 ### Service Specifications
 
+#### Backend ML API Service
 | Parameter | Value | Purpose |
-|-----------|-------|----------|
-| **Service Name** | `carprice` | Systemd service identifier |
+|-----------|-------|---------|
+| **Service Name** | `carprice` | Backend ML API service |
 | **Runtime User** | `ec2-user` | Non-privileged execution context |
-| **Network Binding** | `0.0.0.0:5000` | Accept connections from all interfaces |
+| **Network Binding** | `0.0.0.0:5002` | ML API endpoints |
+| **Restart Policy** | `always` | Automatic recovery on failure |
+| **Boot Behavior** | `enabled` | Auto-start on system boot |
+
+#### Frontend Web Service
+| Parameter | Value | Purpose |
+|-----------|-------|---------|
+| **Service Name** | `carprice-frontend` | Frontend web interface |
+| **Runtime User** | `ec2-user` | Non-privileged execution context |
+| **Network Binding** | `0.0.0.0:3000` | Web interface |
 | **Restart Policy** | `always` | Automatic recovery on failure |
 | **Boot Behavior** | `enabled` | Auto-start on system boot |
 
 ### Security Considerations
-- Service runs under non-root user (`ec2-user`)
+- Services run under non-root user (`ec2-user`)
 - Virtual environment isolation for Python dependencies
 - Systemd service hardening applied
 - Network access controlled via AWS Security Groups
@@ -117,7 +134,8 @@ curl http://$(terraform -chdir=../infra output -raw ec2_public_ip):5000/health
    - Dependency installation with pip
 
 3. **Service Configuration**
-   - Systemd service unit deployment
+   - Backend ML API service deployment (port 5002)
+   - Frontend web service deployment (port 3000)
    - Service enablement and startup
    - Health verification
 
@@ -143,11 +161,15 @@ All tasks are designed to be idempotent, ensuring safe re-execution without side
 
 ### Health Monitoring
 ```bash
-# Service status
+# Backend service status
 sudo systemctl status carprice
+
+# Frontend service status
+sudo systemctl status carprice-frontend
 
 # Real-time logs
 sudo journalctl -u carprice -f
+sudo journalctl -u carprice-frontend -f
 
 # Application logs
 sudo tail -f /var/log/carprice.log
@@ -155,14 +177,17 @@ sudo tail -f /var/log/carprice.log
 
 ### Service Management
 ```bash
-# Restart service
+# Restart services
 sudo systemctl restart carprice
+sudo systemctl restart carprice-frontend
 
-# Stop service
+# Stop services
 sudo systemctl stop carprice
+sudo systemctl stop carprice-frontend
 
-# Start service
+# Start services
 sudo systemctl start carprice
+sudo systemctl start carprice-frontend
 
 # Reload systemd configuration
 sudo systemctl daemon-reload
@@ -172,8 +197,9 @@ sudo systemctl daemon-reload
 
 | Issue | Symptom | Resolution |
 |-------|---------|------------|
-| Service fails to start | `failed (Result: exit-code)` | Check logs with `journalctl -u carprice` |
-| Port binding error | `Address already in use` | Verify no other service uses port 5000 |
+| Backend service fails | `failed (Result: exit-code)` | Check logs with `journalctl -u carprice` |
+| Frontend service fails | `failed (Result: exit-code)` | Check logs with `journalctl -u carprice-frontend` |
+| Port binding error | `Address already in use` | Verify ports 5002/3000 are available |
 | Permission denied | `Permission denied` errors | Ensure `ec2-user` has proper file permissions |
 
 ## CI/CD Integration
@@ -181,8 +207,18 @@ sudo systemctl daemon-reload
 This playbook integrates with Jenkins pipelines and supports:
 - Automated inventory generation from Terraform state
 - SSH agent forwarding for secure deployments
+- Dual-service deployment (backend + frontend)
 - Post-deployment verification steps
+- Service health monitoring
 - Rollback capabilities
+
+## Application Access
+
+After successful deployment, access the application at:
+- **Backend ML API**: `http://EC2_PUBLIC_IP:5002`
+  - Endpoints: `/current_value_market`, `/future_prediction`, `/publish_car`
+- **Frontend Web Interface**: `http://EC2_PUBLIC_IP:3000`
+  - Interactive web UI for car price predictions
 
 ## Contributing
 
@@ -200,6 +236,6 @@ Enterprise Internal Use Only
 For technical support, contact the DevOps team or create an issue in the internal ticketing system.
 
 ---
-**Version**: 1.0.0  
+**Version**: 2.0.0  
 **Last Updated**: November 2024  
 **Maintained by**: DevOps Engineering Team
