@@ -3,9 +3,11 @@
 
 cd {{ app_dest }}
 
-# Install dependencies silently
-pip install -e ".[backend]" --quiet
-pip install -e ".[frontend]" --quiet
+# Activate virtual environment
+source venv/bin/activate
+
+# Install dependencies silently if needed
+pip install -e ".[dev]" --quiet --break-system-packages || pip install -e ".[dev]" --quiet
 
 # Start backend API (port 5002)
 cd backend

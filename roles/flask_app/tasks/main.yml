@@ -33,7 +33,7 @@
 - name: Install Python dependencies with pip
   shell: |
     source venv/bin/activate
-    pip install -e .[dev] --break-system-packages || pip install -e .[dev]
+    pip install -e ".[dev]" --break-system-packages || pip install -e ".[dev]"
   args:
     chdir: "{{ app_dest }}"
   become: true
@@ -41,7 +41,7 @@
 - name: Deploy production startup script
   template:
     src: start-production.sh.j2
-    dest: {{ app_dest }}/start-production.sh
+    dest: "{{ app_dest }}/start-production.sh"
     mode: '0755'
   become: true
 
