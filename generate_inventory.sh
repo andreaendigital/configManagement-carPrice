@@ -1,4 +1,4 @@
-#!/bin/bash
+ #!/bin/bash
 
 # Navega a la carpeta de Terraform
 cd infra || exit 1
