@@ -25,7 +25,7 @@
     
 - name: Install Splunk OpenTelemetry Collector
   shell: |
-    sh /tmp/splunk-otel-collector.sh --realm {{ splunk_realm }} --token {{ splunk_token }}
+    sh /tmp/splunk-otel-collector.sh --realm {{ splunk_realm }} {{ splunk_token }}
   args:
     creates: /etc/otel/collector/agent_config.yaml
     
