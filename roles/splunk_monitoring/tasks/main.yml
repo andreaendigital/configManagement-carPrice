@@ -4,6 +4,11 @@
     name: '*'
     state: latest
     
+- name: Remove curl-minimal to avoid conflicts
+  yum:
+    name: curl-minimal
+    state: absent
+    
 - name: Install required packages
   yum:
     name:
