@@ -1,0 +1,5 @@
+---
+- name: restart splunk collector
+  systemd:
+    name: splunk-otel-collector
+    state: restarted
