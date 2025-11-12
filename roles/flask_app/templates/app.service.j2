@@ -14,6 +14,8 @@ WorkingDirectory={{ app_dest }}
 # Command to start the app using the virtual environment
 ExecStart=/bin/bash {{ app_dest }}/start-production.sh
 
+#ExecStart=/usr/bin/make dev-python
+
 # Restart policy if the app crashes
 Restart=always
 RestartSec=10
