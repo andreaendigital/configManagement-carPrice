@@ -12,17 +12,20 @@ User=ec2-user
 WorkingDirectory={{ app_dest }}
 
 # Command to start the app using the virtual environment
-ExecStart={{ app_dest }}/venv/bin/python {{ app_dest }}/app.py
+ExecStart=/bin/bash {{ app_dest }}/start-production.sh
 
 #ExecStart=/usr/bin/make dev-python
 
 # Restart policy if the app crashes
 Restart=always
+RestartSec=10
 
 # Optional: environment variables
 Environment=SKIP_TESTS=1
 Environment=FLASK_HOST=0.0.0.0
 Environment=HOST=0.0.0.0
+Environment=PORT=5002
+Environment=PATH=/usr/local/bin:/usr/bin:/bin
 
 [Install]
 # Start the service automatically on boot

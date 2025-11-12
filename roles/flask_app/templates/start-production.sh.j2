@@ -1,0 +1,11 @@
+#!/bin/bash
+# Production startup script for systemd service
+
+cd {{ app_dest }}
+
+# Activate virtual environment
+source venv/bin/activate
+
+# Start backend API (port 5002)
+cd backend
+exec python3 app.py

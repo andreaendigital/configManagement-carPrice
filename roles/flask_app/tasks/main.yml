@@ -33,9 +33,16 @@
 - name: Install Python dependencies with pip
   shell: |
     source venv/bin/activate
-    pip install -e .[dev] --break-system-packages || pip install -e .[dev]
+    pip install -e ".[dev]"
   args:
     chdir: "{{ app_dest }}"
+  become: true
+
+- name: Deploy production startup script
+  template:
+    src: start-production.sh.j2
+    dest: "{{ app_dest }}/start-production.sh"
+    mode: '0755'
   become: true
 
 - name: Deploy systemd service for Flask app
@@ -44,11 +51,29 @@
     dest: /etc/systemd/system/carprice.service
   become: true
 
+- name: Deploy systemd service for Frontend app
+  template:
+    src: frontend.service.j2
+    dest: /etc/systemd/system/carprice-frontend.service
+  become: true
+
+- name: Reload systemd daemon
+  systemd:
+    daemon_reload: true
+  become: true
+
 - name: Enable and start Flask app service
   systemd:
     name: carprice
     enabled: true
-    state: started
+    state: restarted
+  become: true
+
+- name: Enable and start Frontend service
+  systemd:
+    name: carprice-frontend
+    enabled: true
+    state: restarted
   become: true
 
   
