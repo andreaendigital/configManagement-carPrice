@@ -1,0 +1,61 @@
+---
+- name: Update system packages
+  yum:
+    name: '*'
+    state: latest
+    
+- name: Remove curl-minimal to avoid conflicts
+  yum:
+    name: curl-minimal
+    state: absent
+    
+- name: Install required packages
+  yum:
+    name:
+      - curl
+      - wget
+      - htop
+    state: present
+    
+- name: Download Splunk OpenTelemetry Collector installer
+  get_url:
+    url: https://dl.signalfx.com/splunk-otel-collector.sh
+    dest: /tmp/splunk-otel-collector.sh
+    mode: '0755'
+    
+- name: Install Splunk OpenTelemetry Collector
+  shell: |
+    sh /tmp/splunk-otel-collector.sh --realm {{ splunk_realm }} {{ splunk_token }}
+  args:
+    creates: /etc/otel/collector/agent_config.yaml
+    
+- name: Configure OpenTelemetry Collector
+  template:
+    src: agent_config.yaml.j2
+    dest: /etc/otel/collector/agent_config.yaml
+    backup: yes
+  notify: restart splunk collector
+  
+- name: Start and enable Splunk OpenTelemetry Collector
+  systemd:
+    name: splunk-otel-collector
+    state: started
+    enabled: yes
+    
+- name: Send deployment success metric
+  uri:
+    url: "https://ingest.{{ splunk_realm }}.signalfx.com/v2/datapoint"
+    method: POST
+    headers:
+      X-SF-Token: "{{ splunk_token }}"
+      Content-Type: "application/json"
+    body_format: json
+    body:
+      gauge:
+        - metric: "ansible.monitoring.deployed"
+          value: 1
+          dimensions:
+            environment: "production"
+            service: "car-price-predictor"
+            host: "{{ inventory_hostname }}"
+            method: "ansible"

@@ -1,0 +1,29 @@
+# Systemd unit file to run the Frontend Flask app as a service
+
+[Unit]
+Description=CarPrice Frontend Web App
+After=network.target
+Requires=carprice.service
+
+[Service]
+# User that runs the service (Amazon Linux default)
+User=ec2-user
+
+# Working directory where the app is located
+WorkingDirectory={{ app_dest }}/frontend
+
+# Command to start the frontend app using the virtual environment
+ExecStart={{ app_dest }}/venv/bin/python {{ app_dest }}/frontend/app.py
+
+# Restart policy if the app crashes
+Restart=always
+
+# Optional: environment variables
+Environment=SKIP_TESTS=1
+Environment=FLASK_HOST=0.0.0.0
+Environment=HOST=0.0.0.0
+Environment=PORT=3000
+
+[Install]
+# Start the service automatically on boot
+WantedBy=multi-user.target

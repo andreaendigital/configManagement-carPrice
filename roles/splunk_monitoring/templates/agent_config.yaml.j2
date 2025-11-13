@@ -1,0 +1,51 @@
+receivers:
+  hostmetrics:
+    collection_interval: 10s
+    scrapers:
+      cpu:
+      disk:
+      filesystem:
+      memory:
+      network:
+      process:
+  
+  prometheus:
+    config:
+      scrape_configs:
+        - job_name: 'car-price-backend'
+          static_configs:
+            - targets: ['localhost:5002']
+          metrics_path: '/metrics/json'
+          scrape_interval: 30s
+          
+        - job_name: 'car-price-frontend'
+          static_configs:
+            - targets: ['localhost:3000']
+          metrics_path: '/metrics/json'
+          scrape_interval: 30s
+
+processors:
+  resourcedetection:
+    detectors: [env, ec2, system]
+    timeout: 5s
+    
+  attributes:
+    actions:
+      - key: service.name
+        value: "car-price-predictor"
+        action: upsert
+      - key: environment
+        value: "production"
+        action: upsert
+        
+exporters:
+  signalfx:
+    access_token: {{ splunk_token }}
+    realm: {{ splunk_realm }}
+    
+service:
+  pipelines:
+    metrics:
+      receivers: [hostmetrics, prometheus]
+      processors: [resourcedetection, attributes]
+      exporters: [signalfx]
